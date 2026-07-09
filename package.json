@@ -6,7 +6,13 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node src/core/orchestrator.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "cli-adapter:demo": "ts-node src/cli-adapter/example.ts"
   },
-  "keywords": ["claude-code", "cli", "voice-assistant", "jarvis", "open-source"]
+  "keywords": ["claude-code", "cli", "voice-assistant", "jarvis", "open-source"],
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.12.7"
+  }
 }
