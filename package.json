@@ -1,0 +1,12 @@
+{
+  "name": "jarvis-cli-companion",
+  "version": "0.1.0",
+  "description": "Open-source, voice-enabled companion interface for Claude Code CLI",
+  "main": "src/core/orchestrator.ts",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node src/core/orchestrator.ts",
+    "build": "tsc"
+  },
+  "keywords": ["claude-code", "cli", "voice-assistant", "jarvis", "open-source"]
+}
