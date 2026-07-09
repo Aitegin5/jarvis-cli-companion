@@ -1,43 +1,40 @@
 # CLI Adapter
 
-Wraps the Claude Code CLI so nothing above this layer (Orchestrator, voice module, UI) ever has to shell out or parse raw terminal output directly.
-
-## Why
-
-Jarvis exists to remove the terminal from the equation. This module is the only place in the codebase that actually spawns the `claude` process.
+This module wraps the Claude Code CLI as a child process so the rest of
+Jarvis (orchestrator, voice layer, UI) never has to shell out directly
+or parse raw terminal output.
 
 ## Usage
 
-### One-shot command
-
 ```js
-const ClaudeCodeAdapter = require('./ClaudeCodeAdapter');
+const { CliAdapter } = require('./index');
 
-const adapter = new ClaudeCodeAdapter();
+const adapter = new CliAdapter({ binary: 'claude', cwd: process.cwd() });
 
-adapter.run(['--print', 'explain what this repo does'])
-  .then(({ stdout }) => console.log(stdout))
-  .catch((err) => console.error('CLI error:', err.message));
+adapter.on('data', (chunk) => {
+  // stream partial output to the UI or voice layer
+  console.log(chunk);
+});
+
+const answer = await adapter.prompt('Explain this repo structure');
+console.log(answer);
 ```
 
-### Streaming / interactive session
+## API
 
-```js
-const adapter = new ClaudeCodeAdapter();
+- `new CliAdapter({ binary, cwd })` — create an adapter instance.
+- `adapter.run(args, { input })` — run raw CLI args, resolves `{ stdout, stderr, code }`.
+- `adapter.prompt(text, extraArgs)` — convenience wrapper for a single natural-language prompt.
+- `adapter.cancel()` — kills the active CLI process.
+- Events: `data` (stdout chunk), `error-data` (stderr chunk).
 
-adapter.on('line', (line) => console.log('[claude]', line));
-adapter.on('error-data', (chunk) => console.error('[claude:err]', chunk));
-adapter.on('error', (err) => console.error('Failed to start Claude Code CLI:', err.message));
-adapter.on('exit', (code) => console.log('Session ended with code', code));
+## Requirements
 
-adapter.start(['chat']);
-adapter.send('Hello, Jarvis.');
-// ... later
-adapter.stop();
-```
+- Claude Code CLI installed and available on `PATH` (or pass a custom `binary` path).
+- Node.js 18+.
 
-## Notes
+## Next steps
 
-- Requires the `claude` binary to be installed and available on `PATH` (or pass `binary: '/path/to/claude'` in the constructor options).
-- No external dependencies — built entirely on Node's `child_process` and `events` core modules, in line with the project's free/open-source-only constraint.
-- Errors from a missing/broken binary surface through the `error` event (or promise rejection for `run()`), never a crash.
+- Add structured parsing of CLI output (JSON mode if/when CLI supports it).
+- Add timeout/retry handling for long-running commands.
+- Wire into `src/orchestrator` so prompts route through memory + context before hitting the CLI.
